@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog</title>
+  <title>DevOps Blog</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -224,7 +224,8 @@
 <body>
 
 <header>
-  <h1 onclick="showPage('home')">Blog</h1>
+  <h1 onclick="showPage('home')">DevOps Blog</h1>
+  <p>Ubuntu · Docker · Kubernetes · Linux Storage · NGINX</p>
 </header>
 <div class="breadcrumb" id="breadcrumb">
   <a onclick="showPage('home')">Home</a>
@@ -239,7 +240,7 @@
   ══════════════════════════════════════════ -->
   <div class="page active" id="page-home">
     <div class="hero">
-      <h2>Selamat Datang di Blog Gabut 👋</h2>
+      <h2>Selamat Datang di DevOps Blog 👋</h2>
       <p>
         Kumpulan catatan teknis seputar Linux, Docker, Kubernetes, dan infrastruktur.
         Pilih salah satu artikel di bawah untuk mulai membaca.
@@ -801,6 +802,12 @@ EOF</pre>
     <article>
       <h2>3. Reboot Instance</h2>
 
+      <h3>a. Reboot dari dalam VM</h3>
+      <div class="code-wrap">
+        <pre>reboot</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
       <h3>b. Reboot via CLI OpenStack (dari controller)</h3>
       <p>Source credential terlebih dahulu, lalu lakukan soft reboot. Gunakan hard reboot jika soft reboot tidak berhasil.</p>
       <div class="code-wrap">
@@ -876,7 +883,7 @@ EOF</pre>
 </main>
 
 <footer>
-  <p>© 2025 Blog </p>
+  <p>© 2025 DevOps Blog | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack</p>
 </footer>
 
 <script>
