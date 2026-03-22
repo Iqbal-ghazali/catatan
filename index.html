@@ -271,6 +271,13 @@
         <div class="read-more">Baca Selengkapnya →</div>
       </div>
 
+      <div class="post-card" onclick="showPage('blog-reboot')">
+        <span class="tag">OpenStack</span>
+        <h3>MOP — Reboot Instance OpenStack</h3>
+        <p>Prosedur reboot instance via SSH, CLI OpenStack, dan Horizon. Lengkap dengan pre-check dan verify after reboot.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
     </div>
   </div>
 
@@ -747,10 +754,136 @@ apt install -y nginx</pre>
     </article>
   </div>
 
+
+  <!-- ══════════════════════════════════════════
+       BLOG 4 — MOP Reboot Instance
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-reboot">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Masuk ke Instance</h2>
+      <p>Dari controller/bastion, switch ke user ubuntu lalu SSH ke VM target menggunakan private key.</p>
+      <div class="code-wrap">
+        <pre>sudo su - ubuntu</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>ssh -i devops.pem {user}@{ip-vm}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Pre-Check Sebelum Reboot</h2>
+      <p>Sebelum melakukan reboot, jalankan script berikut di dalam VM untuk mendokumentasikan kondisi awal — hostname, uptime, network, disk, dan fstab.</p>
+      <div class="code-wrap">
+        <pre>bash &lt;&lt;'EOF'
+echo "===== 1.1 Hostname & Uptime ====="
+echo "Hostname : $(hostname)"
+echo "Uptime   : $(uptime -p)"
+echo -e "===== 1.2 Network ====="
+echo "IP Address:"
+ip -4 -o addr show | awk '{print $2 ": " $4}'
+echo "Route:"
+ip route show 
+echo -e "===== 1.3 Disk ====="
+echo -e "===== df -h ====="
+df -h --output=source,size,used,avail,pcent,target
+echo -e "===== lsblk ====="
+lsblk -o NAME,SIZE,TYPE,MOUNTPOINT 
+echo -e "===== cat /etc/fstab ====="
+grep -vE '^#|^$' /etc/fstab 
+EOF</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Reboot Instance</h2>
+
+      <h3>a. Reboot dari dalam VM</h3>
+      <div class="code-wrap">
+        <pre>reboot</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Reboot via CLI OpenStack (dari controller)</h3>
+      <p>Source credential terlebih dahulu, lalu lakukan soft reboot. Gunakan hard reboot jika soft reboot tidak berhasil.</p>
+      <div class="code-wrap">
+        <pre>source admin.sh</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre># Soft reboot (direkomendasikan)
+openstack server reboot --soft {instance-id}
+
+# Hard reboot (jika soft reboot tidak bekerja)
+openstack server reboot --hard {instance-id}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Reboot via Horizon</h3>
+      <p>
+        Masuk ke project sesuai instance → cari instance → pilih <strong>Soft Reboot Instance</strong>.<br>
+        Jika soft reboot tidak bekerja, pilih <strong>Hard Reboot Instance</strong>.
+      </p>
+      <div class="info-box">
+        <strong>Verify di Horizon:</strong> Setelah reboot, pantau status instance melalui tab <strong>Log</strong> dan <strong>Action Log</strong> untuk memastikan proses berjalan normal.
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Verify Setelah Reboot</h2>
+      <p>Tunggu hingga instance kembali online, kemudian test konektivitas dan lakukan SSH.</p>
+
+      <h3>a. Ping instance</h3>
+      <div class="code-wrap">
+        <pre>ping -c10 {ip-floating-vm}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Cek port SSH</h3>
+      <div class="code-wrap">
+        <pre>nc -zv {ip-vm} 22</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Test SSH</h3>
+      <div class="code-wrap">
+        <pre>ssh -i {key} {user}@{ip-vm}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Verify kondisi VM setelah reboot</h3>
+      <p>Jalankan script yang sama seperti pre-check untuk membandingkan kondisi sebelum dan sesudah reboot.</p>
+      <div class="code-wrap">
+        <pre>bash &lt;&lt;'EOF'
+echo "===== 1.1 Hostname & Uptime ====="
+echo "Hostname : $(hostname)"
+echo "Uptime   : $(uptime -p)"
+echo -e "===== 1.2 Network ====="
+echo "IP Address:"
+ip -4 -o addr show | awk '{print $2 ": " $4}'
+echo "Route:"
+ip route show 
+echo -e "===== 1.3 Disk ====="
+echo -e "===== df -h ====="
+df -h --output=source,size,used,avail,pcent,target
+echo -e "===== lsblk ====="
+lsblk -o NAME,SIZE,TYPE,MOUNTPOINT 
+echo -e "===== cat /etc/fstab ====="
+grep -vE '^#|^$' /etc/fstab 
+EOF</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+  </div>
+
 </main>
 
 <footer>
-  <p>© 2025 DevOps Blog | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX</p>
+  <p>© 2025 DevOps Blog | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack</p>
 </footer>
 
 <script>
@@ -759,6 +892,7 @@ apt install -y nginx</pre>
     'blog-k8s':     { el: 'page-blog-k8s',     title: 'Deployment Leantime & Gatus' },
     'blog-volume':  { el: 'page-blog-volume',   title: 'Volume & Filesystem Management' },
     'blog-nginx':   { el: 'page-blog-nginx',    title: 'Local Repository NGINX' },
+    'blog-reboot':  { el: 'page-blog-reboot',   title: 'MOP — Reboot Instance OpenStack' },
   };
 
   function showPage(key) {
