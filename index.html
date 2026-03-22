@@ -278,6 +278,13 @@
         <div class="read-more">Baca Selengkapnya →</div>
       </div>
 
+      <div class="post-card" onclick="showPage('blog-prometheus')">
+        <span class="tag">Monitoring</span>
+        <h3>Monitoring dengan Prometheus &amp; Node Exporter</h3>
+        <p>Install dan konfigurasi Node Exporter di VM target serta Prometheus sebagai scraper metrics di VM terpisah.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
     </div>
   </div>
 
@@ -880,19 +887,217 @@ EOF</pre>
     </article>
   </div>
 
+  <!-- ══════════════════════════════════════════
+       BLOG 5 — Prometheus & Node Exporter
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-prometheus">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Persiapan Awal</h2>
+      <p>Update dan upgrade sistem terlebih dahulu sebelum memulai instalasi.</p>
+      <div class="code-wrap">
+        <pre>apt-get update -y; apt-get upgrade -y</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Install Node Exporter</h2>
+
+      <h3>a. Buat user node_exporter</h3>
+      <div class="code-wrap">
+        <pre>sudo useradd --no-create-home --shell /bin/false node_exporter</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Download Node Exporter ke /mnt</h3>
+      <div class="code-wrap">
+        <pre>wget https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz -P /mnt</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Masuk ke /mnt dan ekstrak file</h3>
+      <div class="code-wrap">
+        <pre>cd /mnt
+tar -zxvf node_exporter-1.6.1.linux-amd64.tar.gz</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Copy binary ke /usr/local/bin</h3>
+      <div class="code-wrap">
+        <pre>cp /mnt/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>e. Set ownership ke user node_exporter</h3>
+      <div class="code-wrap">
+        <pre>chown node_exporter:node_exporter /usr/local/bin/node_exporter</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>f. Buat systemd service</h3>
+      <p>Buat file service di <code>/etc/systemd/system/node_exporter.service</code>:</p>
+      <div class="code-wrap">
+        <pre>nano /etc/systemd/system/node_exporter.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>g. Enable dan jalankan service</h3>
+      <div class="code-wrap">
+        <pre>systemctl daemon-reload; systemctl start node_exporter; systemctl enable node_exporter; systemctl status node_exporter</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>h. Verify Node Exporter</h3>
+      <div class="code-wrap">
+        <pre>curl {ip}:9100</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Install Prometheus</h2>
+
+      <h3>a. Buat user prometheus</h3>
+      <div class="code-wrap">
+        <pre>sudo useradd --no-create-home --shell /usr/sbin/nologin prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Download Prometheus ke /mnt</h3>
+      <div class="code-wrap">
+        <pre>wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-2.46.0.linux-amd64.tar.gz -P /mnt</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Masuk ke /mnt dan ekstrak</h3>
+      <div class="code-wrap">
+        <pre>cd /mnt
+tar -zxvf prometheus-2.46.0.linux-amd64.tar.gz</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Copy binary prometheus dan promtool ke /usr/local/bin</h3>
+      <div class="code-wrap">
+        <pre>cp /mnt/prometheus-2.46.0.linux-amd64/prometheus /usr/local/bin/
+cp /mnt/prometheus-2.46.0.linux-amd64/promtool /usr/local/bin/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>e. Set ownership binary</h3>
+      <div class="code-wrap">
+        <pre>chown prometheus:prometheus /usr/local/bin/prom*</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>f. Buat direktori /etc/prometheus dan copy file konfigurasi</h3>
+      <div class="code-wrap">
+        <pre>mkdir /etc/prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>cp /mnt/prometheus-2.46.0.linux-amd64/console* /etc/prometheus/ -Rf
+cp /mnt/prometheus-2.46.0.linux-amd64/prometheus.yml /etc/prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>chown prometheus:prometheus /etc/prometheus/ -Rf</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Konfigurasi Prometheus</h2>
+      <p>Edit file <code>/etc/prometheus/prometheus.yml</code> dan tambahkan job untuk node_exporter. Sesuaikan IP target dengan IP VM yang menjalankan node_exporter.</p>
+      <div class="code-wrap">
+        <pre>scrape_configs:
+  # Job default — Prometheus scrape dirinya sendiri
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Job baru — scrape node_exporter di VM target
+  - job_name: "node_exporter"
+    static_configs:
+      - targets: ["192.168.1.7:9100"]</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>5. Jalankan Prometheus sebagai Service</h2>
+
+      <h3>a. Buat systemd service</h3>
+      <p>Buat file <code>/etc/systemd/system/prometheus.service</code>:</p>
+      <div class="code-wrap">
+        <pre>nano /etc/systemd/system/prometheus.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>[Unit]
+Description=Prometheus Monitoring
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+  --config.file /etc/prometheus/prometheus.yml \
+  --storage.tsdb.path /etc/prometheus/data/ \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Enable dan jalankan service</h3>
+      <div class="code-wrap">
+        <pre>systemctl daemon-reload; systemctl start Prometheus; systemctl enable Prometheus; systemctl status prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <div class="info-box">
+        <strong>Akses Prometheus UI:</strong> Setelah service berjalan, buka browser dan akses <code>http://{ip-prometheus}:9090</code> untuk masuk ke dashboard Prometheus. Cek menu <strong>Status → Targets</strong> untuk memastikan node_exporter terdaftar dan statusnya <strong>UP</strong>.
+      </div>
+    </article>
+  </div>
+
 </main>
 
 <footer>
-  <p>© 2025 DevOps Blog | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack</p>
+  <p>© 2025 DevOps Blog | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack · Prometheus</p>
 </footer>
 
 <script>
   const pages = {
-    'home':         { el: 'page-home',         title: null },
-    'blog-k8s':     { el: 'page-blog-k8s',     title: 'Deployment Leantime & Gatus' },
-    'blog-volume':  { el: 'page-blog-volume',   title: 'Volume & Filesystem Management' },
-    'blog-nginx':   { el: 'page-blog-nginx',    title: 'Local Repository NGINX' },
-    'blog-reboot':  { el: 'page-blog-reboot',   title: 'MOP — Reboot Instance OpenStack' },
+    'home':             { el: 'page-home',             title: null },
+    'blog-k8s':         { el: 'page-blog-k8s',         title: 'Deployment Leantime & Gatus' },
+    'blog-volume':      { el: 'page-blog-volume',       title: 'Volume & Filesystem Management' },
+    'blog-nginx':       { el: 'page-blog-nginx',        title: 'Local Repository NGINX' },
+    'blog-reboot':      { el: 'page-blog-reboot',       title: 'MOP — Reboot Instance OpenStack' },
+    'blog-prometheus':  { el: 'page-blog-prometheus',   title: 'Monitoring dengan Prometheus & Node Exporter' },
   };
 
   function showPage(key) {
