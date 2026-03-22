@@ -802,7 +802,7 @@ EOF</pre>
     <article>
       <h2>3. Reboot Instance</h2>
 
-      <h3>b. Reboot via CLI OpenStack (dari controller)</h3>
+      <h3>a. Reboot via CLI OpenStack (dari controller)</h3>
       <p>Source credential terlebih dahulu, lalu lakukan soft reboot. Gunakan hard reboot jika soft reboot tidak berhasil.</p>
       <div class="code-wrap">
         <pre>source admin.sh</pre>
@@ -817,7 +817,7 @@ openstack server reboot --hard {instance-id}</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
 
-      <h3>c. Reboot via Horizon</h3>
+      <h3>b. Reboot via Horizon</h3>
       <p>
         Masuk ke project sesuai instance → cari instance → pilih <strong>Soft Reboot Instance</strong>.<br>
         Jika soft reboot tidak bekerja, pilih <strong>Hard Reboot Instance</strong>.
