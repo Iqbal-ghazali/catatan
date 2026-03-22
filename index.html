@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catatan Gabut</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: #1f1f1f;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #333;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #4CAF50;
+      cursor: pointer;
+    }
+    header p {
+      margin: 6px 0 0;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    /* ── NAV BREADCRUMB ── */
+    .breadcrumb {
+      max-width: 900px;
+      margin: 14px auto 0;
+      padding: 0 20px;
+      font-size: 0.85rem;
+      color: #666;
+      display: none;
+    }
+    .breadcrumb.show { display: block; }
+    .breadcrumb a {
+      color: #4CAF50;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 6px; }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    /* ── PAGE SECTIONS ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── HOMEPAGE ── */
+    .hero {
+      text-align: center;
+      padding: 40px 20px 30px;
+      border-bottom: 1px solid #2a2a2a;
+      margin-bottom: 40px;
+    }
+    .hero h2 {
+      font-size: 1.8rem;
+      color: #4CAF50;
+      margin: 0 0 12px;
+    }
+    .hero p {
+      color: #aaa;
+      max-width: 580px;
+      margin: 0 auto;
+      font-size: 0.97rem;
+    }
+
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .post-card {
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 22px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .post-card:hover {
+      border-color: #4CAF50;
+      transform: translateY(-3px);
+    }
+    .post-card .tag {
+      display: inline-block;
+      background: rgba(76,175,80,0.12);
+      color: #4CAF50;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(76,175,80,0.25);
+    }
+    .post-card h3 {
+      color: #e0e0e0;
+      font-size: 1.05rem;
+      margin: 0 0 10px;
+    }
+    .post-card p {
+      color: #888;
+      font-size: 0.88rem;
+      margin: 0 0 16px;
+    }
+    .post-card .read-more {
+      color: #4CAF50;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      color: #4CAF50;
+      margin: 0 0 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    /* ── ARTICLE PAGES ── */
+    article {
+      margin-bottom: 40px;
+    }
+    h2 { color: #4CAF50; margin-top: 30px; }
+    h3 { color: #81C784; margin-top: 20px; }
+
+    code {
+      background: #1e1e1e;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: "Courier New", monospace;
+      font-size: 0.88em;
+      color: #dcdcdc;
+    }
+
+    .code-wrap { position: relative; margin: 15px 0; }
+
+    pre {
+      background: #1e1e1e;
+      padding: 14px 14px 14px 14px;
+      border-radius: 8px;
+      display: block;
+      overflow-x: auto;
+      margin: 0;
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      color: #dcdcdc;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #aaa;
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: #383838; color: #fff; }
+
+    .info-box {
+      border-left: 3px solid #4CAF50;
+      background: #1a1a1a;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin: 14px 0;
+      font-size: 0.93rem;
+    }
+    .info-box.warn { border-left-color: #ff9800; }
+
+    a { color: #4CAF50; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── BACK BUTTON ── */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: #aaa;
+      padding: 7px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      margin-bottom: 28px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .back-btn:hover { border-color: #4CAF50; color: #4CAF50; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #1f1f1f;
+      border-top: 2px solid #333;
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 onclick="showPage('home')">Catatan Gabut 📝</h1>
+  <p>Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · Prometheus</p>
+</header>
+<div class="breadcrumb" id="breadcrumb">
+  <a onclick="showPage('home')">Catatan Gabut</a>
+  <span>›</span>
+  <span id="breadcrumb-title"></span>
+</div>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       HOME PAGE
+  ══════════════════════════════════════════ -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <h2>Catatan Gabut 🗒️</h2>
+      <p>
+        Bukan blog resmi, bukan dokumentasi keren — cuma kumpulan catatan iseng seputar Linux, Docker, Kubernetes, dan teman-temannya.
+        Pilih catatan di bawah buat mulai baca.
+      </p>
+    </div>
+
+    <p class="section-title">📂 Semua Catatan</p>
+    <div class="posts-grid">
+
+      <div class="post-card" onclick="showPage('blog-k8s')">
+        <span class="tag">Kubernetes</span>
+        <h3>Deployment Leantime &amp; Gatus di Kubernetes</h3>
+        <p>Setup k3d cluster, deploy Leantime sebagai project management tool beserta monitoring Gatus dan MySQL.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-volume')">
+        <span class="tag">Linux Storage</span>
+        <h3>Volume &amp; Filesystem Management</h3>
+        <p>Resize partisi dari dalam VM, format filesystem ext4/xfs, mount point, dan konfigurasi fstab persistent.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-nginx')">
+        <span class="tag">NGINX / APT</span>
+        <h3>Local Repository NGINX (Ubuntu 24.04)</h3>
+        <p>Setup server-mon sebagai local apt mirror untuk NGINX menggunakan apt-mirror dan serve via HTTP.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-reboot')">
+        <span class="tag">OpenStack</span>
+        <h3>MOP — Reboot Instance OpenStack</h3>
+        <p>Prosedur reboot instance via SSH, CLI OpenStack, dan Horizon. Lengkap dengan pre-check dan verify after reboot.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-prometheus')">
+        <span class="tag">Monitoring</span>
+        <h3>Monitoring dengan Prometheus &amp; Node Exporter</h3>
+        <p>Install dan konfigurasi Node Exporter di VM target serta Prometheus sebagai scraper metrics di VM terpisah.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       BLOG 1 — K8s Leantime & Gatus
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-k8s">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Operating System</h2>
+      <p>Menggunakan <strong>Ubuntu 22.04 LTS (Jammy Jellyfish)</strong> sebagai basis sistem operasi.<br>
+      Referensi resmi: <a href="https://releases.ubuntu.com/jammy/" target="_blank">https://releases.ubuntu.com/jammy/</a></p>
+    </article>
+
+    <article>
+      <h2>2. Networking</h2>
+      <p>Sebelum menjalankan <code>netplan apply</code>, tambahkan terlebih dahulu <strong>Network Adapter Host-Only</strong> pada Virtual Machine. Setelah itu atur IP statis sesuai kebutuhan.</p>
+      <div class="code-wrap">
+        <pre># Contoh konfigurasi netplan (silakan menyesuaikan)
+network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: no
+      addresses:
+        - 192.168.56.10/24
+      gateway4: 192.168.56.1
+      nameservers:
+        addresses: [8.8.8.8, 1.1.1.1]</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Troubleshooting</h2>
+      <p>Permasalahan <code>netplan apply</code> error karena <strong>Open vSwitch belum terinstall</strong>. Solusi:</p>
+      <div class="code-wrap">
+        <pre>apt install openvswitch-switch</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Installasi Docker</h2>
+      <div class="code-wrap">
+        <pre>sudo apt-get update
+sudo apt-get install ca-certificates curl -y
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+sudo usermod -aG docker $USER
+sudo chmod 666 /var/run/docker.sock</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>5. Installasi Kubernetes (k3d)</h2>
+      <div class="code-wrap">
+        <pre>wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+sudo apt update
+sudo apt install docker.io -y
+sudo usermod -aG docker $USER
+sudo chmod 666 /var/run/docker.sock
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin
+
+# Membuat cluster
+sudo k3d cluster create leantime-cluster -s 1 -a 2 -p "8080:30080" -p "8081:30081"</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>6. Deployment &amp; Service Gatus</h2>
+      <div class="code-wrap">
+        <pre>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gatus-config
+data:
+  config.yaml: |
+    storage:
+      type: sqlite
+      path: data.db
+    endpoints:
+      - name: Leantime
+        url: "http://leantime:8080"
+        interval: 30s
+        conditions:
+          - "[STATUS] == 200"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gatus
+  template:
+    metadata:
+      labels:
+        app: gatus
+    spec:
+      containers:
+        - name: gatus
+          image: twinproduction/gatus:latest
+          volumeMounts:
+            - name: gatus-config
+              mountPath: /config
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: gatus-config
+          configMap:
+            name: gatus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatus
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      nodePort: 30081
+  selector:
+    app: gatus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>7. Deployment &amp; Service Leantime</h2>
+      <div class="code-wrap">
+        <pre>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leantime
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leantime
+  template:
+    metadata:
+      labels:
+        app: leantime
+    spec:
+      containers:
+        - name: leantime
+          image: leantime/leantime:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: LEAN_DB_HOST
+              value: mysql
+            - name: LEAN_DB_USER
+              value: lean
+            - name: LEAN_DB_PASSWORD
+              value: changeme123
+            - name: LEAN_DB_DATABASE
+              value: leantime
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: leantime
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      nodePort: 30080
+  selector:
+    app: leantime</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>8. Deployment &amp; Service MySQL</h2>
+      <div class="code-wrap">
+        <pre>apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.4
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: changeme123
+            - name: MYSQL_DATABASE
+              value: leantime
+            - name: MYSQL_USER
+              value: lean
+            - name: MYSQL_PASSWORD
+              value: changeme123
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mysql</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       BLOG 2 — Volume & Filesystem
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-volume">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Resize Volume dari Dalam VM</h2>
+      <p>Setelah memperluas disk di sisi hypervisor atau cloud provider, gunakan <code>growpart</code> untuk memperluas partisi tanpa menghapus data. Pastikan paket <strong>cloud-guest-utils</strong> sudah terinstall: <code>sudo apt install cloud-guest-utils -y</code></p>
+      <div class="code-wrap">
+        <pre>sudo growpart {partition_device} {nomor_partisi}
+
+# Contoh: perluas partisi ke-1 pada /dev/xvda
+sudo growpart /dev/xvda 1</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Verify:</p>
+      <div class="code-wrap">
+        <pre>lsblk</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Resize Filesystem — Keluarga EXT</h2>
+      <p>Setelah partisi diperluas, filesystem harus ikut di-resize. Untuk <strong>ext2 / ext3 / ext4</strong> gunakan <code>resize2fs</code>.</p>
+      <div class="code-wrap">
+        <pre>sudo resize2fs {partition}
+
+# Contoh
+sudo resize2fs /dev/xvda1</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box warn">
+        <strong>Tips:</strong> Jika muncul error "bad magic number", jalankan <code>e2fsck -f {partition}</code> terlebih dahulu untuk memperbaiki filesystem.
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Resize Filesystem — XFS</h2>
+      <p>Untuk filesystem <strong>XFS</strong>, gunakan <code>xfs_growfs</code>. Target berupa <em>mount point</em>, bukan device path.</p>
+      <div class="code-wrap">
+        <pre>sudo xfs_growfs {target/mount_point}
+
+# Contoh: filesystem di-mount di /
+sudo xfs_growfs /
+
+# Contoh: filesystem di-mount di /data
+sudo xfs_growfs /data</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Verify (berlaku untuk ext maupun xfs):</p>
+      <div class="code-wrap">
+        <pre>df -h</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Format Partisi Baru dengan mkfs</h2>
+      <p>Saat menambahkan disk baru, format terlebih dahulu sebelum bisa di-mount.</p>
+      <div class="code-wrap">
+        <pre>sudo mkfs -t {type} {partition}
+
+# Contoh untuk ext4
+sudo mkfs -t ext4 /dev/xvdd1
+
+# Contoh untuk xfs
+sudo mkfs -t xfs /dev/xvdd1</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Verify filesystem &amp; cek UUID:</p>
+      <div class="code-wrap">
+        <pre>blkid {partition}
+
+# Contoh output:
+# /dev/xvdd1: UUID="a1b2c3d4-..." TYPE="ext4"</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>5. Buat Mount Point &amp; Mount Filesystem</h2>
+      <div class="code-wrap">
+        <pre>sudo mkdir /data
+sudo mount /dev/xvdd1 /data</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Verify:</p>
+      <div class="code-wrap">
+        <pre>lsblk
+df -h</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>6. Persistent Mount via /etc/fstab</h2>
+      <p>Tambahkan entri ke <code>/etc/fstab</code> menggunakan UUID agar filesystem otomatis ter-mount saat boot.</p>
+      <div class="code-wrap">
+        <pre># Format
+UUID="&lt;uuid-device&gt;"  {mount_point}  {type}  defaults  0 0
+
+# Contoh
+UUID="a1b2c3d4-e5f6-7890-abcd-ef1234567890"  /data  ext4  defaults  0 0</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box warn">
+        <strong>Warning:</strong> Kesalahan di <code>/etc/fstab</code> bisa mencegah sistem boot. Selalu test dengan <code>sudo mount -a</code> sebelum reboot.
+      </div>
+      <div class="code-wrap">
+        <pre># Test entri fstab tanpa reboot
+sudo mount -a
+
+# Verify
+df -h</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       BLOG 3 — Local Repo NGINX
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-nginx">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Setup VM server-mon sebagai Local Repository Server (Case: NGINX)</h2>
+
+      <h3>a. Install dan konfigurasi nginx sebagai HTTP repo server</h3>
+      <div class="code-wrap">
+        <pre>apt update
+apt install -y nginx
+systemctl enable nginx
+systemctl start nginx</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Buat direktori /mirror/ubuntu-additional</h3>
+      <div class="code-wrap">
+        <pre>mkdir -p /mirror/ubuntu-additional/master-sync
+mkdir -p /mirror/ubuntu-additional/gpg</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Download GPG key nginx</h3>
+      <div class="code-wrap">
+        <pre>wget https://nginx.org/keys/nginx_signing.key \
+-O /mirror/ubuntu-additional/gpg/nginx_signing.key</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Sync repo nginx menggunakan apt-mirror</h3>
+      <p>Semua base repo harus dinonaktifkan. Isi file <code>/etc/apt/mirror.list</code> hanya sebagai berikut:</p>
+      <div class="code-wrap">
+        <pre>set base_path    /mirror/ubuntu-additional/master-sync
+set nthreads     20
+set _tilde 0
+deb https://nginx.org/packages/ubuntu noble nginx
+clean https://nginx.org/packages/ubuntu</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Jalankan proses mirror:</p>
+      <div class="code-wrap">
+        <pre>apt-mirror</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>e. Symlink /mirror/ubuntu-additional ke /var/www/html</h3>
+      <div class="code-wrap">
+        <pre>ln -s /mirror/ubuntu-additional /var/www/html/ubuntu-additional</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>f. Symlink hasil sync nginx ke /mirror/ubuntu-additional/nginx</h3>
+      <p>Struktur hasil mirror dari nginx berada di:</p>
+      <div class="code-wrap">
+        <pre>/mirror/ubuntu-additional/master-sync/mirror/nginx.org/packages/ubuntu/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Buat direktori nginx dan lakukan symlink:</p>
+      <div class="code-wrap">
+        <pre>mkdir -p /mirror/ubuntu-additional/nginx
+ln -s /mirror/ubuntu-additional/master-sync/mirror/nginx.org/packages/ubuntu/dists \
+/mirror/ubuntu-additional/nginx/dists
+ln -s /mirror/ubuntu-additional/master-sync/mirror/nginx.org/packages/ubuntu/pool \
+/mirror/ubuntu-additional/nginx/pool</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Test Instalasi NGINX di VM client-mon</h2>
+
+      <h3>a. Import GPG key nginx di client-mon</h3>
+      <div class="code-wrap">
+        <pre>wget http://10.10.10.11/ubuntu-additional/gpg/nginx_signing.key -O nginx.key
+gpg --dearmor nginx.key > /usr/share/keyrings/nginx.gpg</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Membuat file repo menggunakan EOF</h3>
+      <div class="code-wrap">
+        <pre>cat &lt;&lt; 'EOF' > /etc/apt/sources.list.d/nginx.list
+deb [trusted=yes arch=amd64] http://10.10.10.11/ubuntu-additional/nginx noble nginx
+EOF</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Install nginx dari local repository</h3>
+      <div class="code-wrap">
+        <pre>apt update
+apt install -y nginx</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       BLOG 4 — MOP Reboot Instance
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-reboot">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Masuk ke Instance</h2>
+      <p>Dari controller/bastion, switch ke user ubuntu lalu SSH ke VM target menggunakan private key.</p>
+      <div class="code-wrap">
+        <pre>sudo su - ubuntu</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>ssh -i devops.pem {user}@{ip-vm}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Pre-Check Sebelum Reboot</h2>
+      <p>Sebelum melakukan reboot, jalankan script berikut di dalam VM untuk mendokumentasikan kondisi awal — hostname, uptime, network, disk, dan fstab.</p>
+      <div class="code-wrap">
+        <pre>bash &lt;&lt;'EOF'
+echo "===== 1.1 Hostname & Uptime ====="
+echo "Hostname : $(hostname)"
+echo "Uptime   : $(uptime -p)"
+echo -e "===== 1.2 Network ====="
+echo "IP Address:"
+ip -4 -o addr show | awk '{print $2 ": " $4}'
+echo "Route:"
+ip route show 
+echo -e "===== 1.3 Disk ====="
+echo -e "===== df -h ====="
+df -h --output=source,size,used,avail,pcent,target
+echo -e "===== lsblk ====="
+lsblk -o NAME,SIZE,TYPE,MOUNTPOINT 
+echo -e "===== cat /etc/fstab ====="
+grep -vE '^#|^$' /etc/fstab 
+EOF</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Reboot Instance</h2>
+
+      <h3>a. Reboot dari dalam VM</h3>
+      <div class="code-wrap">
+        <pre>reboot</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Reboot via CLI OpenStack (dari controller)</h3>
+      <p>Source credential terlebih dahulu, lalu lakukan soft reboot. Gunakan hard reboot jika soft reboot tidak berhasil.</p>
+      <div class="code-wrap">
+        <pre>source admin.sh</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre># Soft reboot (direkomendasikan)
+openstack server reboot --soft {instance-id}
+
+# Hard reboot (jika soft reboot tidak bekerja)
+openstack server reboot --hard {instance-id}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Reboot via Horizon</h3>
+      <p>
+        Masuk ke project sesuai instance → cari instance → pilih <strong>Soft Reboot Instance</strong>.<br>
+        Jika soft reboot tidak bekerja, pilih <strong>Hard Reboot Instance</strong>.
+      </p>
+      <div class="info-box">
+        <strong>Verify di Horizon:</strong> Setelah reboot, pantau status instance melalui tab <strong>Log</strong> dan <strong>Action Log</strong> untuk memastikan proses berjalan normal.
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Verify Setelah Reboot</h2>
+      <p>Tunggu hingga instance kembali online, kemudian test konektivitas dan lakukan SSH.</p>
+
+      <h3>a. Ping instance</h3>
+      <div class="code-wrap">
+        <pre>ping -c10 {ip-floating-vm}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Cek port SSH</h3>
+      <div class="code-wrap">
+        <pre>nc -zv {ip-vm} 22</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Test SSH</h3>
+      <div class="code-wrap">
+        <pre>ssh -i {key} {user}@{ip-vm}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Verify kondisi VM setelah reboot</h3>
+      <p>Jalankan script yang sama seperti pre-check untuk membandingkan kondisi sebelum dan sesudah reboot.</p>
+      <div class="code-wrap">
+        <pre>bash &lt;&lt;'EOF'
+echo "===== 1.1 Hostname & Uptime ====="
+echo "Hostname : $(hostname)"
+echo "Uptime   : $(uptime -p)"
+echo -e "===== 1.2 Network ====="
+echo "IP Address:"
+ip -4 -o addr show | awk '{print $2 ": " $4}'
+echo "Route:"
+ip route show 
+echo -e "===== 1.3 Disk ====="
+echo -e "===== df -h ====="
+df -h --output=source,size,used,avail,pcent,target
+echo -e "===== lsblk ====="
+lsblk -o NAME,SIZE,TYPE,MOUNTPOINT 
+echo -e "===== cat /etc/fstab ====="
+grep -vE '^#|^$' /etc/fstab 
+EOF</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       BLOG 5 — Prometheus & Node Exporter
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-prometheus">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Persiapan Awal</h2>
+      <p>Update dan upgrade sistem terlebih dahulu sebelum memulai instalasi.</p>
+      <div class="code-wrap">
+        <pre>apt-get update -y; apt-get upgrade -y</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Install Node Exporter</h2>
+
+      <h3>a. Buat user node_exporter</h3>
+      <div class="code-wrap">
+        <pre>sudo useradd --no-create-home --shell /bin/false node_exporter</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Download Node Exporter ke /mnt</h3>
+      <div class="code-wrap">
+        <pre>wget https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz -P /mnt</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Masuk ke /mnt dan ekstrak file</h3>
+      <div class="code-wrap">
+        <pre>cd /mnt
+tar -zxvf node_exporter-1.6.1.linux-amd64.tar.gz</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Copy binary ke /usr/local/bin</h3>
+      <div class="code-wrap">
+        <pre>cp /mnt/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>e. Set ownership ke user node_exporter</h3>
+      <div class="code-wrap">
+        <pre>chown node_exporter:node_exporter /usr/local/bin/node_exporter</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>f. Buat systemd service</h3>
+      <p>Buat file service di <code>/etc/systemd/system/node_exporter.service</code>:</p>
+      <div class="code-wrap">
+        <pre>nano /etc/systemd/system/node_exporter.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>g. Enable dan jalankan service</h3>
+      <div class="code-wrap">
+        <pre>systemctl daemon-reload; systemctl start node_exporter; systemctl enable node_exporter; systemctl status node_exporter</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>h. Verify Node Exporter</h3>
+      <div class="code-wrap">
+        <pre>curl {ip}:9100</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Install Prometheus</h2>
+
+      <h3>a. Buat user prometheus</h3>
+      <div class="code-wrap">
+        <pre>sudo useradd --no-create-home --shell /usr/sbin/nologin prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Download Prometheus ke /mnt</h3>
+      <div class="code-wrap">
+        <pre>wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-2.46.0.linux-amd64.tar.gz -P /mnt</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Masuk ke /mnt dan ekstrak</h3>
+      <div class="code-wrap">
+        <pre>cd /mnt
+tar -zxvf prometheus-2.46.0.linux-amd64.tar.gz</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Copy binary prometheus dan promtool ke /usr/local/bin</h3>
+      <div class="code-wrap">
+        <pre>cp /mnt/prometheus-2.46.0.linux-amd64/prometheus /usr/local/bin/
+cp /mnt/prometheus-2.46.0.linux-amd64/promtool /usr/local/bin/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>e. Set ownership binary</h3>
+      <div class="code-wrap">
+        <pre>chown prometheus:prometheus /usr/local/bin/prom*</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>f. Buat direktori /etc/prometheus dan copy file konfigurasi</h3>
+      <div class="code-wrap">
+        <pre>mkdir /etc/prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>cp /mnt/prometheus-2.46.0.linux-amd64/console* /etc/prometheus/ -Rf
+cp /mnt/prometheus-2.46.0.linux-amd64/prometheus.yml /etc/prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>chown prometheus:prometheus /etc/prometheus/ -Rf</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Konfigurasi Prometheus</h2>
+      <p>Edit file <code>/etc/prometheus/prometheus.yml</code> dan tambahkan job untuk node_exporter. Sesuaikan IP target dengan IP VM yang menjalankan node_exporter.</p>
+      <div class="code-wrap">
+        <pre>scrape_configs:
+  # Job default — Prometheus scrape dirinya sendiri
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Job baru — scrape node_exporter di VM target
+  - job_name: "node_exporter"
+    static_configs:
+      - targets: ["192.168.1.7:9100"]</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>5. Jalankan Prometheus sebagai Service</h2>
+
+      <h3>a. Buat systemd service</h3>
+      <p>Buat file <code>/etc/systemd/system/prometheus.service</code>:</p>
+      <div class="code-wrap">
+        <pre>nano /etc/systemd/system/prometheus.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>[Unit]
+Description=Prometheus Monitoring
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+  --config.file /etc/prometheus/prometheus.yml \
+  --storage.tsdb.path /etc/prometheus/data/ \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Enable dan jalankan service</h3>
+      <div class="code-wrap">
+        <pre>systemctl daemon-reload; systemctl start Prometheus; systemctl enable Prometheus; systemctl status prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <div class="info-box">
+        <strong>Akses Prometheus UI:</strong> Setelah service berjalan, buka browser dan akses <code>http://{ip-prometheus}:9090</code> untuk masuk ke dashboard Prometheus. Cek menu <strong>Status → Targets</strong> untuk memastikan node_exporter terdaftar dan statusnya <strong>UP</strong>.
+      </div>
+    </article>
+  </div>
+
+</main>
+
+<footer>
+  <p>© 2025 Catatan Gabut | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack · Prometheus</p>
+</footer>
+
+<script>
+  const pages = {
+    'home':             { el: 'page-home',             title: null },
+    'blog-k8s':         { el: 'page-blog-k8s',         title: 'Deployment Leantime & Gatus' },
+    'blog-volume':      { el: 'page-blog-volume',       title: 'Volume & Filesystem Management' },
+    'blog-nginx':       { el: 'page-blog-nginx',        title: 'Local Repository NGINX' },
+    'blog-reboot':      { el: 'page-blog-reboot',       title: 'MOP — Reboot Instance OpenStack' },
+    'blog-prometheus':  { el: 'page-blog-prometheus',   title: 'Monitoring dengan Prometheus & Node Exporter' },
+  };
+
+  function showPage(key) {
+    // hide all
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // show target
+    document.getElementById(pages[key].el).classList.add('active');
+    // breadcrumb
+    const bc = document.getElementById('breadcrumb');
+    if (key === 'home') {
+      bc.classList.remove('show');
+    } else {
+      bc.classList.add('show');
+      document.getElementById('breadcrumb-title').textContent = pages[key].title;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-wrap').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'COPIED!';
+      btn.style.color = '#4CAF50';
+      btn.style.borderColor = '#4CAF50';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 1800);
+    });
+  }
+</script>
+</body>
+</html>
