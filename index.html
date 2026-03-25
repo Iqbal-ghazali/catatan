@@ -153,7 +153,7 @@
 
     pre {
       background: #1e1e1e;
-      padding: 14px 14px 14px 14px;
+      padding: 14px 60px 14px 14px;
       border-radius: 8px;
       display: block;
       overflow-x: auto;
@@ -161,6 +161,7 @@
       font-family: "Courier New", monospace;
       font-size: 14px;
       color: #dcdcdc;
+      white-space: pre;
     }
 
     .copy-btn {
@@ -225,7 +226,7 @@
 
 <header>
   <h1 onclick="showPage('home')">Catatan Gabut 📝</h1>
-  <p>Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · Prometheus</p>
+  <p>Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · Prometheus · Loki</p>
 </header>
 <div class="breadcrumb" id="breadcrumb">
   <a onclick="showPage('home')">Catatan Gabut</a>
@@ -282,6 +283,27 @@
         <span class="tag">Monitoring</span>
         <h3>Monitoring dengan Prometheus &amp; Node Exporter</h3>
         <p>Install dan konfigurasi Node Exporter di VM target serta Prometheus sebagai scraper metrics di VM terpisah.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-victoriametrics')">
+        <span class="tag">Monitoring</span>
+        <h3>Integrasi VictoriaMetrics sebagai Storage Pengganti TSDB</h3>
+        <p>Install VictoriaMetrics, jalankan sebagai service, dan migrasi data lama dari Prometheus menggunakan vmctl.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-migrate-prometheus')">
+        <span class="tag">Prometheus</span>
+        <h3>Migrasi Data-Source Prometheus dari compute-1 ke compute-2</h3>
+        <p>Prosedur lengkap pindah Prometheus antar compute node: copy config, snapshot data lama, rsync, dan cutover.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-loki')">
+        <span class="tag">Logging</span>
+        <h3>Setup Loki &amp; Promtail</h3>
+        <p>Install Loki sebagai log aggregation backend dan Promtail sebagai log shipper, lengkap dengan konfigurasi service systemd.</p>
         <div class="read-more">Baca Selengkapnya →</div>
       </div>
 
@@ -1084,28 +1106,472 @@ WantedBy=multi-user.target</pre>
     </article>
   </div>
 
+  <!-- ══════════════════════════════════════════
+       BLOG 6 — VictoriaMetrics
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-victoriametrics">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Tentang VictoriaMetrics</h2>
+      <p>
+        VictoriaMetrics adalah time-series database (TSDB) berkinerja tinggi yang kompatibel dengan Prometheus.
+        Bisa digunakan sebagai pengganti storage bawaan Prometheus dengan konsumsi RAM dan disk yang lebih efisien,
+        terutama untuk data skala besar.
+      </p>
+      <div class="info-box">
+        <strong>Kenapa VictoriaMetrics?</strong> Kompresi data lebih baik, query PromQL tetap kompatibel,
+        dan mendukung remote write/read dari Prometheus tanpa perubahan konfigurasi besar.
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Install VictoriaMetrics</h2>
+
+      <h3>a. Download binary</h3>
+      <div class="code-wrap">
+        <pre>wget https://github.com/VictoriaMetrics/VictoriaMetrics/releases/latest/download/victoria-metrics-linux-amd64-prod.tar.gz
+tar -xzf victoria-metrics-linux-amd64-prod.tar.gz
+sudo mv victoria-metrics-prod /usr/local/bin/victoriametrics</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Buat direktori data</h3>
+      <div class="code-wrap">
+        <pre>sudo mkdir -p /var/lib/victoriametrics</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Jalankan sebagai Service</h2>
+
+      <h3>a. Buat file systemd service</h3>
+      <div class="code-wrap">
+        <pre>sudo vi /etc/systemd/system/victoriametrics.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Isi file service dengan konfigurasi berikut:</p>
+      <div class="code-wrap">
+        <pre>[Unit]
+Description=VictoriaMetrics
+After=network.target
+
+[Service]
+User=root
+ExecStart=/usr/local/bin/victoriametrics \
+  --storageDataPath=/var/lib/victoriametrics \
+  --httpListenAddr=:8428
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Enable dan jalankan service</h3>
+      <div class="code-wrap">
+        <pre>sudo systemctl daemon-reload
+sudo systemctl enable victoriametrics
+sudo systemctl start victoriametrics</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Verifikasi service berjalan</h3>
+      <div class="code-wrap">
+        <pre>sudo systemctl status victoriametrics</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>curl http://localhost:8428/health</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        <strong>Expected output:</strong> <code>curl</code> ke <code>/health</code> akan mengembalikan
+        <code>OK</code> jika VictoriaMetrics berjalan normal.
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Migrasi Data Lama ke VictoriaMetrics menggunakan vmctl</h2>
+
+      <h3>a. Buat snapshot data Prometheus yang lama</h3>
+      <div class="code-wrap">
+        <pre>curl -XPOST http://localhost:9090/api/v1/admin/tsdb/snapshot</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Expected output:</p>
+      <div class="code-wrap">
+        <pre>{"status":"success","data":{"name":"20240101T000000Z-abc123"}}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        Catat nama snapshot yang muncul di output (contoh: <code>20240101T000000Z-abc123</code>).
+        Snapshot disimpan di direktori: <code>/var/lib/prometheus/snapshots/&lt;nama_snapshot&gt;</code>
+      </div>
+
+      <h3>b. Install vmctl</h3>
+      <div class="code-wrap">
+        <pre>wget https://github.com/VictoriaMetrics/VictoriaMetrics/releases/latest/download/vmutils-linux-amd64.tar.gz
+tar -xzf vmutils-linux-amd64.tar.gz
+sudo mv vmctl /usr/local/bin/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Jalankan migrasi</h3>
+      <p>Ganti <code>{nama-snapshot}</code> dengan nama snapshot yang sudah dicatat sebelumnya:</p>
+      <div class="code-wrap">
+        <pre>vmctl prometheus \
+  --prom-snapshot=/var/lib/prometheus/snapshots/{nama-snapshot} \
+  --vm-addr=http://localhost:8428 \
+  --prom-concurrency=4</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Verifikasi data berhasil dimigrasikan</h3>
+      <div class="code-wrap">
+        <pre>curl "http://localhost:8428/api/v1/query?query=up"</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Atau akses UI VictoriaMetrics di browser:</p>
+      <div class="code-wrap">
+        <pre>http://{ip-server}:8428/vmui</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        Pastikan metric-metric dari Prometheus lama sudah muncul di vmui. Coba query sederhana seperti
+        <code>up</code> atau <code>node_cpu_seconds_total</code> untuk konfirmasi.
+      </div>
+    </article>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       BLOG 7 — Migrasi Prometheus compute-1 ke compute-2
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-migrate-prometheus">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Persiapan</h2>
+      <p>
+        Pastikan Prometheus sudah terinstall di <strong>compute-2</strong> dan diharapkan versinya
+        sama dengan yang ada di <strong>compute-1</strong>. Cek versi di masing-masing node:
+      </p>
+      <div class="code-wrap">
+        <pre>prometheus --version</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box warn">
+        <strong>⚠️ Perhatian:</strong> Perbedaan versi Prometheus antar node bisa menyebabkan
+        inkompatibilitas format data. Usahakan versi sama sebelum melanjutkan.
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Copy File Konfigurasi dari compute-1 ke compute-2</h2>
+
+      <h3>a. Copy file prometheus.yml</h3>
+      <div class="code-wrap">
+        <pre>scp /etc/prometheus/prometheus.yml user@compute-2:/etc/prometheus/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Copy direktori rules</h3>
+      <div class="code-wrap">
+        <pre>scp -r /etc/prometheus/rules/ user@compute-2:/etc/prometheus/rules/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Migrasi Data Lama dari compute-1</h2>
+
+      <h3>a. Buat snapshot data Prometheus di compute-1</h3>
+      <div class="code-wrap">
+        <pre>curl -XPOST http://localhost:9090/api/v1/admin/tsdb/snapshot</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        Catat nama snapshot dari output, contoh: <code>20240101T000000Z-abc123</code>.
+        Snapshot tersimpan di <code>/var/lib/prometheus/snapshots/&lt;nama_snapshot&gt;</code>
+      </div>
+
+      <h3>b. Copy snapshot ke compute-2 menggunakan rsync</h3>
+      <div class="code-wrap">
+        <pre>rsync -avz --progress /var/lib/prometheus/snapshots/{nama-snapshot} root@15.15.15.103:/var/lib/prometheus/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Pindahkan data snapshot ke direktori utama Prometheus di compute-2</h3>
+      <p>Login ke compute-2, lalu jalankan:</p>
+      <div class="code-wrap">
+        <pre>cd /var/lib/prometheus/{nama-snapshot}
+mv * ..</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>d. Fix ownership direktori data</h3>
+      <div class="code-wrap">
+        <pre>chown -R prometheus:prometheus /var/lib/prometheus/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Restart &amp; Verifikasi Prometheus di compute-2</h2>
+      <div class="code-wrap">
+        <pre>systemctl daemon-reload
+systemctl start prometheus
+systemctl enable prometheus
+systemctl status prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>curl http://localhost:9090/-/healthy</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        Buka <code>http://{ip-compute-2}:9090</code> dan cek menu <strong>Status → Targets</strong>
+        untuk memastikan semua target scrape kembali <strong>UP</strong>.
+      </div>
+    </article>
+
+    <article>
+      <h2>5. Matikan Prometheus di compute-1</h2>
+      <p>Setelah semua diverifikasi dan tidak ada masalah di compute-2:</p>
+      <div class="code-wrap">
+        <pre>systemctl stop prometheus
+systemctl disable prometheus</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box warn">
+        <strong>⚠️ Pastikan</strong> Prometheus di compute-2 sudah berjalan stabil dan semua data
+        terverifikasi sebelum mematikan service di compute-1.
+      </div>
+    </article>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       BLOG 8 — Setup Loki & Promtail
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-loki">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>1. Install Loki</h2>
+
+      <h3>a. Download dan extract binary Loki</h3>
+      <div class="code-wrap">
+        <pre>curl -LO "https://github.com/grafana/loki/releases/latest/download/loki-linux-amd64.zip"
+unzip loki-linux-amd64.zip
+sudo mv loki-linux-amd64 /usr/local/bin/loki
+sudo chmod +x /usr/local/bin/loki</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Buat direktori penyimpanan data Loki</h3>
+      <div class="code-wrap">
+        <pre>mkdir /data/loki</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Buat file konfigurasi Loki</h3>
+      <p>Buat file <code>/etc/loki-config.yaml</code> dengan isi berikut:</p>
+      <div class="code-wrap">
+        <pre>auth_enabled: false
+
+server:
+  http_listen_address: 0.0.0.0
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  path_prefix: /data/loki
+
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /var/lib/loki/index
+    cache_location: /var/lib/loki/index_cache
+  filesystem:
+    directory: /var/lib/loki/chunks
+
+limits_config:
+  allow_structured_metadata: false
+
+compactor:
+  working_directory: /var/lib/loki/compactor</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>2. Jalankan Loki sebagai Service</h2>
+
+      <h3>a. Buat file systemd service</h3>
+      <div class="code-wrap">
+        <pre>nano /etc/systemd/system/loki.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>[Unit]
+Description=Loki service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/loki -config.file /etc/loki-config.yaml
+
+[Install]
+WantedBy=multi-user.target</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Enable dan jalankan service</h3>
+      <div class="code-wrap">
+        <pre>systemctl daemon-reload; systemctl enable --now loki.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Verifikasi Loki berjalan</h3>
+      <div class="code-wrap">
+        <pre>systemctl status loki.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>curl localhost:3100/ready</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        <strong>Expected output:</strong> Endpoint <code>/ready</code> akan merespons <code>ready</code>
+        jika Loki sudah siap menerima log.
+      </div>
+    </article>
+
+    <article>
+      <h2>3. Install Promtail</h2>
+
+      <h3>a. Download dan extract binary Promtail</h3>
+      <div class="code-wrap">
+        <pre>curl -LO "https://github.com/grafana/loki/releases/latest/download/promtail-linux-amd64.zip"
+unzip promtail-linux-amd64.zip
+sudo mv promtail-linux-amd64 /usr/local/bin/promtail
+sudo chmod +x /usr/local/bin/promtail</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Buat file konfigurasi Promtail</h3>
+      <p>Buat file <code>/etc/promtail-config.yaml</code>. Ganti <code>[ip-loki]</code> dan <code>[nama-host]</code> sesuai environment:</p>
+      <div class="code-wrap">
+        <pre>server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /data/loki/positions.yaml
+
+clients:
+  - url: http://[ip-loki]:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: system-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs-pod-prome
+          host: [nama-host]
+          __path__: /var/log/*.log</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        <strong>Catatan:</strong> <code>__path__</code> menentukan file log yang akan di-scrape oleh Promtail.
+        Sesuaikan path jika log aplikasi berada di lokasi lain, misalnya <code>/var/log/nginx/*.log</code>.
+      </div>
+    </article>
+
+    <article>
+      <h2>4. Jalankan Promtail sebagai Service</h2>
+
+      <h3>a. Buat file systemd service</h3>
+      <div class="code-wrap">
+        <pre>nano /etc/systemd/system/promtail.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>[Unit]
+Description=Promtail service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/promtail -config.file /etc/promtail-config.yaml
+
+[Install]
+WantedBy=multi-user.target</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>b. Enable dan jalankan service</h3>
+      <div class="code-wrap">
+        <pre>systemctl daemon-reload; systemctl enable --now promtail.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>c. Verifikasi Promtail berjalan</h3>
+      <div class="code-wrap">
+        <pre>systemctl status promtail.service</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="info-box">
+        Setelah Promtail berjalan, log dari <code>/var/log/*.log</code> akan mulai dikirim ke Loki secara otomatis.
+        Untuk memverifikasi, tambahkan Loki sebagai data source di Grafana dengan URL
+        <code>http://[ip-loki]:3100</code> lalu query menggunakan LogQL.
+      </div>
+    </article>
+  </div>
+
 </main>
 
 <footer>
-  <p>© 2025 Catatan Gabut | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack · Prometheus</p>
+  <p>© 2025 Catatan Gabut | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack · Prometheus · Loki</p>
 </footer>
 
 <script>
   const pages = {
-    'home':             { el: 'page-home',             title: null },
-    'blog-k8s':         { el: 'page-blog-k8s',         title: 'Deployment Leantime & Gatus' },
-    'blog-volume':      { el: 'page-blog-volume',       title: 'Volume & Filesystem Management' },
-    'blog-nginx':       { el: 'page-blog-nginx',        title: 'Local Repository NGINX' },
-    'blog-reboot':      { el: 'page-blog-reboot',       title: 'MOP — Reboot Instance OpenStack' },
-    'blog-prometheus':  { el: 'page-blog-prometheus',   title: 'Monitoring dengan Prometheus & Node Exporter' },
+    'home':                    { el: 'page-home',                    title: null },
+    'blog-k8s':                { el: 'page-blog-k8s',                title: 'Deployment Leantime & Gatus' },
+    'blog-volume':             { el: 'page-blog-volume',             title: 'Volume & Filesystem Management' },
+    'blog-nginx':              { el: 'page-blog-nginx',              title: 'Local Repository NGINX' },
+    'blog-reboot':             { el: 'page-blog-reboot',             title: 'MOP — Reboot Instance OpenStack' },
+    'blog-prometheus':         { el: 'page-blog-prometheus',         title: 'Monitoring dengan Prometheus & Node Exporter' },
+    'blog-victoriametrics':    { el: 'page-blog-victoriametrics',    title: 'Integrasi VictoriaMetrics sebagai Storage Pengganti TSDB' },
+    'blog-migrate-prometheus': { el: 'page-blog-migrate-prometheus', title: 'Migrasi Data-Source Prometheus dari compute-1 ke compute-2' },
+    'blog-loki':               { el: 'page-blog-loki',               title: 'Setup Loki & Promtail' },
   };
 
   function showPage(key) {
-    // hide all
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    // show target
     document.getElementById(pages[key].el).classList.add('active');
-    // breadcrumb
     const bc = document.getElementById('breadcrumb');
     if (key === 'home') {
       bc.classList.remove('show');
