@@ -314,6 +314,13 @@
         <div class="read-more">Baca Selengkapnya →</div>
       </div>
 
+      <div class="post-card" onclick="showPage('blog-openstack-cmd')">
+        <span class="tag">OpenStack</span>
+        <h3>OpenStack Command Cheat Sheet</h3>
+        <p>Kumpulan perintah OpenStack CLI lengkap — domain, user, project, image, network, instance, volume, floating IP, dan lainnya.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
     </div>
   </div>
 
@@ -1306,7 +1313,7 @@ sudo mv vmctl /usr/local/bin/</pre>
 
       <h3>b. Copy snapshot ke compute-2 menggunakan rsync</h3>
       <div class="code-wrap">
-        <pre>rsync -avz --progress /var/lib/prometheus/snapshots/{nama-snapshot} user@compute-2:/var/lib/prometheus/</pre>
+        <pre>rsync -avz --progress /var/lib/prometheus/snapshots/{nama-snapshot} <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="41332e2e350170746f70746f70746f707172">[email&#160;protected]</a>:/var/lib/prometheus/</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
 
@@ -1587,11 +1594,8 @@ systemctl status nginx</pre>
 
     <article>
       <h2>3. Buat Folder Directory</h2>
-      <p>Buat direktori web root, direktori mirror beserta subdirektori <code>master-sync</code> dan <code>gpg</code>, lalu buat symlink agar NGINX bisa serve isinya.</p>
       <div class="code-wrap">
-        <pre>mkdir -p /var/www/html/
-mkdir -p /mirror/rhel/{master-sync,gpg}
-ln -s /mirror/rhel/ /var/www/html/rhel</pre>
+        <pre>mkdir -p /var/www/html/</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
     </article>
@@ -1691,13 +1695,227 @@ gpgcheck=0</pre>
     </article>
   </div>
 
+  <!-- ══════════════════════════════════════════
+       BLOG 10 — OpenStack Command Cheat Sheet
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-openstack-cmd">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>Domains</h2>
+      <div class="code-wrap">
+        <pre>openstack domain list
+openstack domain show &lt;domain ID&gt;
+openstack domain create &lt;domain name&gt;
+openstack domain set &lt;key&gt; &lt;value&gt; &lt;domain ID&gt;
+openstack domain delete &lt;domain ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Users</h2>
+      <div class="code-wrap">
+        <pre>openstack user list
+openstack user show &lt;user ID&gt;
+openstack user create --password &lt;password&gt; &lt;user name&gt;
+openstack user set &lt;key&gt; &lt;value&gt; &lt;user ID&gt;
+openstack user password set
+openstack user delete &lt;user ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Groups</h2>
+      <div class="code-wrap">
+        <pre>openstack group list
+openstack group show &lt;group ID&gt;
+openstack group create &lt;group name&gt;
+openstack group set &lt;key&gt; &lt;value&gt; &lt;group ID&gt;
+openstack group add user &lt;group ID&gt; &lt;user ID&gt;
+openstack group remove user &lt;group ID&gt; &lt;user ID&gt;
+openstack group delete &lt;group ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Projects</h2>
+      <div class="code-wrap">
+        <pre>openstack project list
+openstack project create &lt;project name&gt;
+openstack project set &lt;key&gt; &lt;value&gt; &lt;project ID&gt;
+openstack project delete &lt;project ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Roles</h2>
+      <div class="code-wrap">
+        <pre># Assign role on project
+openstack role add --project &lt;project ID&gt; \
+  [--user &lt;user ID&gt; | --group &lt;group ID&gt;] &lt;role name&gt;
+
+# Remove role on project
+openstack role remove --project &lt;project ID&gt; \
+  [--user &lt;user ID&gt; | --group &lt;group ID&gt;] &lt;role name&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Images</h2>
+      <div class="code-wrap">
+        <pre>openstack image list
+openstack image show &lt;image ID&gt;
+openstack image create --disk-format qcow2 \
+  --file &lt;file path&gt; &lt;image name&gt;
+openstack image set &lt;key&gt; &lt;value&gt; &lt;image ID&gt;
+openstack image delete &lt;image ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Flavors</h2>
+      <div class="code-wrap">
+        <pre>openstack flavor list
+openstack flavor show &lt;flavor name&gt;
+openstack flavor create --vcpus &lt;vCPUs&gt; --ram &lt;RAM[MB]&gt; \
+  --disk &lt;Disk[GB]&gt; &lt;flavor name&gt;
+openstack flavor set &lt;key&gt; &lt;value&gt; &lt;flavor name&gt;
+openstack flavor delete &lt;flavor name&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Networks</h2>
+      <div class="code-wrap">
+        <pre>openstack network list
+openstack network show &lt;network ID&gt;
+openstack network create &lt;network name&gt;
+openstack network set &lt;key&gt; &lt;value&gt; &lt;network ID&gt;
+openstack network delete &lt;network ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Subnets</h2>
+      <div class="code-wrap">
+        <pre>openstack subnet list
+openstack subnet show &lt;subnet ID&gt;
+openstack subnet create --network &lt;network ID&gt; \
+  --subnet-range &lt;subnet CIDR&gt; &lt;subnet name&gt;
+openstack subnet set &lt;key&gt; &lt;value&gt; &lt;subnet ID&gt;
+openstack subnet delete &lt;subnet ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Routers</h2>
+      <div class="code-wrap">
+        <pre>openstack router list
+openstack router show &lt;router ID&gt;
+openstack router create &lt;router name&gt;
+openstack router set &lt;key&gt; &lt;value&gt; &lt;router ID&gt;
+openstack router add subnet &lt;router ID&gt; &lt;subnet ID&gt;
+openstack router remove subnet &lt;router ID&gt; &lt;subnet ID&gt;
+openstack router delete &lt;router ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Security Groups</h2>
+      <div class="code-wrap">
+        <pre>openstack security group list
+openstack security group show &lt;security group ID&gt;
+openstack security group create &lt;security group name&gt;
+openstack security group set &lt;key&gt; &lt;value&gt; &lt;security group ID&gt;
+openstack security group rule list &lt;security group ID&gt;
+openstack security group rule create \
+  &lt;key&gt; &lt;value&gt; ... &lt;security group ID&gt;
+openstack security group rule delete &lt;rule ID&gt;
+openstack security group delete &lt;security group ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Key Pairs</h2>
+      <div class="code-wrap">
+        <pre>openstack keypair list
+openstack keypair show &lt;key pair name&gt;
+openstack keypair create --private-key &lt;file path&gt; &lt;key pair name&gt;
+openstack keypair delete &lt;key pair name&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Quotas</h2>
+      <div class="code-wrap">
+        <pre>openstack quota show --default
+openstack quota set &lt;key&gt; &lt;value&gt; --class default
+openstack quota show &lt;project ID&gt;
+openstack quota set &lt;key&gt; &lt;value&gt; &lt;project ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Instances</h2>
+      <div class="code-wrap">
+        <pre>openstack server list
+openstack server show &lt;instance ID&gt;
+openstack server create --flavor &lt;flavor name&gt; \
+  --image &lt;image ID&gt; --network &lt;network ID&gt; \
+  --key-name &lt;key pair name&gt; &lt;instance name&gt;
+openstack server set &lt;key&gt; &lt;value&gt; &lt;instance ID&gt;
+openstack server delete &lt;instance ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Floating IPs</h2>
+      <div class="code-wrap">
+        <pre>openstack floating ip list
+openstack floating ip create &lt;network ID&gt;
+openstack server add floating ip &lt;instance ID&gt; &lt;floating IP ID&gt;
+openstack server remove floating ip &lt;instance ID&gt; &lt;floating IP ID&gt;
+openstack floating ip delete &lt;floating IP ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>Volumes</h2>
+      <div class="code-wrap">
+        <pre>openstack volume list
+openstack volume show &lt;volume ID&gt;
+openstack volume create --size &lt;size [GB]&gt; &lt;volume name&gt;
+openstack volume set &lt;key&gt; &lt;value&gt; &lt;volume ID&gt;
+openstack server add volume &lt;instance ID&gt; &lt;volume ID&gt;
+openstack server remove volume &lt;instance ID&gt; &lt;volume ID&gt;
+openstack volume delete &lt;volume ID&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+  </div>
+
 </main>
 
 <footer>
   <p>© 2025 Catatan Gabut | Ubuntu · Docker · Kubernetes · Linux Storage · NGINX · OpenStack · Prometheus · Loki</p>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const pages = {
     'home':                    { el: 'page-home',                    title: null },
     'blog-k8s':                { el: 'page-blog-k8s',                title: 'Deployment Leantime & Gatus' },
@@ -1709,6 +1927,7 @@ gpgcheck=0</pre>
     'blog-migrate-prometheus': { el: 'page-blog-migrate-prometheus', title: 'Migrasi Data-Source Prometheus dari compute-1 ke compute-2' },
     'blog-loki':               { el: 'page-blog-loki',               title: 'Setup Loki & Promtail' },
     'blog-localrepo-rhel':     { el: 'page-blog-localrepo-rhel',     title: 'Setup Local Repo di Linux berbasis RHEL menggunakan NGINX' },
+    'blog-openstack-cmd':      { el: 'page-blog-openstack-cmd',      title: 'OpenStack Command Cheat Sheet' },
   };
 
   function showPage(key) {
@@ -1730,28 +1949,14 @@ gpgcheck=0</pre>
       const orig = btn.textContent;
       btn.textContent = 'COPIED!';
       btn.style.color = '#4CAF50';
+      btn.style.borderColor = '#4CAF50';
       setTimeout(() => {
         btn.textContent = orig;
         btn.style.color = '';
-      }, 2000);
-    }).catch(() => {
-      // Fallback for older browsers
-      const range = document.createRange();
-      range.selectNode(pre);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
-      document.execCommand('copy');
-      window.getSelection().removeAllRanges();
-      const orig = btn.textContent;
-      btn.textContent = 'COPIED!';
-      btn.style.color = '#4CAF50';
-      setTimeout(() => {
-        btn.textContent = orig;
-        btn.style.color = '';
-      }, 2000);
+        btn.style.borderColor = '';
+      }, 1800);
     });
   }
 </script>
-
 </body>
 </html>
