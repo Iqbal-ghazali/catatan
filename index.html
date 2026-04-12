@@ -1583,7 +1583,7 @@ systemctl status nginx</pre>
     <article>
       <h2>3. Buat Folder Directory</h2>
       <div class="code-wrap">
-        <pre>mkdir -p /var/www/html/</pre>
+        <pre>mkdir -p /mirror/rhel/master-sync/</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
     </article>
@@ -1600,7 +1600,7 @@ systemctl status nginx</pre>
         <pre>server {
     listen 80;
     server_name localhost;
-    location /localrepo {
+    location / {
         root /var/www/html;
         autoindex on;
     }
@@ -1614,7 +1614,15 @@ systemctl status nginx</pre>
     </article>
 
     <article>
-      <h2>5. Tambah Repo Source (Contoh: nginx-stable)</h2>
+      <h2>5. Symlink /mirror/rhel ke /var/www/html</h2>
+      <div class="code-wrap">
+        <pre>ln -s /mirror/rhel/ /var/www/html/</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+
+    <article>
+      <h2>6. Tambah Repo Source (Contoh: nginx-stable)</h2>
       <p>Sebagai contoh, kita akan sync repo nginx dari upstream. Buat file repo terlebih dahulu:</p>
       <div class="code-wrap">
         <pre>vi /etc/yum.repos.d/nginx.repo</pre>
@@ -1639,7 +1647,7 @@ priority=9</pre>
     </article>
 
     <article>
-      <h2>6. Sync Repo ke Server Lokal</h2>
+      <h2>7. Sync Repo ke Server Lokal</h2>
       <p>Jalankan <code>reposync</code> untuk mendownload semua package dari repo upstream ke direktori lokal:</p>
       <div class="code-wrap">
         <pre>reposync --repoid=nginx-stable --download-path=/mirror/rhel/master-sync --download-metadata</pre>
@@ -1652,7 +1660,7 @@ priority=9</pre>
     </article>
 
     <article>
-      <h2>7. Konsumsi Repo dari VM Lain</h2>
+      <h2>8. Konsumsi Repo dari VM Lain</h2>
       <p>Di VM client, buat file repo yang mengarah ke server lokal. Ganti IP dengan IP server local repo kamu:</p>
       <div class="code-wrap">
         <pre>vim /etc/yum.repos.d/nginx.repo</pre>
