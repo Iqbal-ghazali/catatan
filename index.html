@@ -297,8 +297,15 @@
 
       <div class="post-card" onclick="showPage('blog-localrepo-rhel')">
         <span class="tag">RHEL / DNF</span>
-        <h3>Setup Local Repo di Linux berbasis RHEL menggunakan NGINX</h3>
-        <p>Setup local repository menggunakan NGINX dan reposync di sistem berbasis RHEL/Amazon Linux 2023, beserta cara konsumsi repo dari VM lain.</p>
+        <h3>Setup Local Repo OS RHEL menggunakan httpd</h3>
+        <p>Setup local repository menggunakan Apache httpd dan reposync di sistem berbasis RHEL, lengkap dengan konfigurasi SELinux dan softlink.</p>
+        <div class="read-more">Baca Selengkapnya →</div>
+      </div>
+
+      <div class="post-card" onclick="showPage('blog-nfs')">
+        <span class="tag">Rocky Linux</span>
+        <h3>Setup NFS Server &amp; Client (Rocky 9)</h3>
+        <p>Konfigurasi NFS server dengan shared directory, exports, dan firewall, beserta cara mount dari sisi client di Rocky Linux 9.</p>
         <div class="read-more">Baca Selengkapnya →</div>
       </div>
 
@@ -1559,134 +1566,161 @@ WantedBy=multi-user.target</pre>
     <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
 
     <article>
-      <h2>1. Install NGINX</h2>
+      <h2>1. Install Web Server (httpd)</h2>
       <div class="code-wrap">
-        <pre>dnf install nginx -y</pre>
-        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
-      </div>
-      <div class="code-wrap">
-        <pre>systemctl start nginx
-systemctl enable nginx
-systemctl status nginx</pre>
+        <pre>sudo dnf install httpd -y
+sudo systemctl enable --now httpd</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
     </article>
 
     <article>
-      <h2>2. Install Tools Repo</h2>
+      <h2>2. Install Tools Sync</h2>
       <div class="code-wrap">
-        <pre>dnf install createrepo -y</pre>
+        <pre>sudo dnf install createrepo yum-utils -y</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
     </article>
 
     <article>
-      <h2>3. Buat Folder Directory</h2>
+      <h2>3. Konfigurasi httpd untuk Nampilin Directory</h2>
+      <p>Tambahkan konfigurasi berikut ke <code>/etc/httpd/conf.d/localrepo.conf</code>:</p>
       <div class="code-wrap">
-        <pre>mkdir -p /mirror/rhel/master-sync/</pre>
+        <pre>vi /etc/httpd/conf.d/localrepo.conf</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>&lt;Directory "/var/www/html"&gt;
+    Options Indexes FollowSymLinks
+    AllowOverride None
+    Require all granted
+&lt;/Directory&gt;</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <p>Hapus halaman welcome default supaya directory listing bisa muncul:</p>
+      <div class="code-wrap">
+        <pre>rm -f /etc/httpd/conf.d/welcome.conf</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>sudo systemctl restart httpd</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
     </article>
 
     <article>
-      <h2>4. Setup NGINX untuk Serve Repo</h2>
-      <p>Buat file konfigurasi NGINX untuk local repo:</p>
+      <h2>4. Buat Softlink ke Web Server</h2>
       <div class="code-wrap">
-        <pre>nano /etc/nginx/conf.d/localrepo.conf</pre>
+        <pre>ln -s /data/mirror /var/www/html</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
-      <p>Isi file konfigurasi dengan blok server berikut:</p>
-      <div class="code-wrap">
-        <pre>server {
-    listen 80;
-    server_name localhost;
-    location / {
-        root /var/www/html;
-        autoindex on;
-    }
-}</pre>
-        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      <div class="info-box warn">
+        <strong>Kalau terkendala SELinux</strong>, ubah type dari direktori yang digunakan:
       </div>
       <div class="code-wrap">
-        <pre>systemctl restart nginx</pre>
+        <pre>semanage fcontext -a -t httpd_sys_content_t "/data(/.*)?"
+restorecon -Rv /data
+semanage fcontext -a -t httpd_sys_content_t "/var/www/html/(/.*)?"
+restorecon -Rv /var/www/html</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
     </article>
 
     <article>
-      <h2>5. Symlink /mirror/rhel ke /var/www/html</h2>
+      <h2>5. Sync Repo</h2>
+      <p>Jalankan <code>reposync</code> dengan config file yang sudah disiapkan:</p>
       <div class="code-wrap">
-        <pre>ln -s /mirror/rhel/ /var/www/html/</pre>
+        <pre>reposync -c /root/rhel8.conf -p /mirror/rhel/rhel8 --download-metadata --downloadcomps --newest-only --refresh</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
-    </article>
-
-    <article>
-      <h2>6. Tambah Repo Source (Contoh: nginx-stable)</h2>
-      <p>Sebagai contoh, kita akan sync repo nginx dari upstream. Buat file repo terlebih dahulu:</p>
-      <div class="code-wrap">
-        <pre>vi /etc/yum.repos.d/nginx.repo</pre>
-        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
-      </div>
-      <div class="code-wrap">
-        <pre>[nginx-stable]
-name=nginx stable repo
-baseurl=https://nginx.org/packages/amzn/2023/$basearch/
-gpgcheck=1
-enabled=1
-gpgkey=https://nginx.org/keys/nginx_signing.key
-module_hotfixes=true
-priority=9</pre>
-        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
-      </div>
-      <p>Verifikasi repo terdaftar:</p>
-      <div class="code-wrap">
-        <pre>dnf repolist</pre>
-        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
-      </div>
-    </article>
-
-    <article>
-      <h2>7. Sync Repo ke Server Lokal</h2>
-      <p>Jalankan <code>reposync</code> untuk mendownload semua package dari repo upstream ke direktori lokal:</p>
-      <div class="code-wrap">
-        <pre>reposync --repoid=nginx-stable --download-path=/mirror/rhel/master-sync --download-metadata</pre>
-        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
-      </div>
+      <p>Keterangan flag:</p>
       <div class="info-box">
-        Flag <code>--download-metadata</code> memastikan semua metadata repo ikut didownload
-        sehingga bisa langsung dikonsumsi oleh client tanpa perlu menjalankan <code>createrepo</code> lagi.
+        <code>-c</code> = lokasi file repo config<br>
+        <code>-p</code> = direktori output hasil sync
+      </div>
+      <div class="info-box warn">
+        <strong>Khusus RHEL 7 / CentOS 7 ke bawah</strong>, tambahkan perintah berikut setelah reposync selesai:
+      </div>
+      <div class="code-wrap">
+        <pre>createrepo -v --update --workers=7 /mirror/rhel/rhel7/{nama-repo}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+    </article>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       BLOG 11 — Setup NFS Server & Client Rocky 9
+  ══════════════════════════════════════════ -->
+  <div class="page" id="page-blog-nfs">
+    <button class="back-btn" onclick="showPage('home')">← Kembali ke Home</button>
+
+    <article>
+      <h2>NFS Server</h2>
+
+      <h3>1. Install tools</h3>
+      <div class="code-wrap">
+        <pre>sudo dnf install nfs-utils -y
+sudo systemctl enable --now nfs-server rpcbind</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>2. Buat shared directory</h3>
+      <div class="code-wrap">
+        <pre>sudo mkdir /mnt/shares
+sudo chown nobody:nobody /mnt/shares
+sudo chmod 755 /mnt/shares</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>3. Konfigurasi exports</h3>
+      <div class="code-wrap">
+        <pre>sudo vi /etc/exports</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>/mnt/shares 20.20.20.0/24(rw,sync,no_root_squash)</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-wrap">
+        <pre>sudo exportfs -arv</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+
+      <h3>4. Buka firewall</h3>
+      <div class="code-wrap">
+        <pre>sudo firewall-cmd --permanent --add-service=nfs
+sudo firewall-cmd --permanent --add-service=mountd
+sudo firewall-cmd --permanent --add-service=rpc-bind
+sudo firewall-cmd --reload</pre>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
     </article>
 
     <article>
-      <h2>8. Konsumsi Repo dari VM Lain</h2>
-      <p>Di VM client, buat file repo yang mengarah ke server lokal. Ganti IP dengan IP server local repo kamu:</p>
+      <h2>NFS Client</h2>
+
+      <h3>1. Install nfs-utils</h3>
       <div class="code-wrap">
-        <pre>vim /etc/yum.repos.d/nginx.repo</pre>
+        <pre>dnf install nfs-utils -y</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
+
+      <h3>2. Buat direktori share</h3>
       <div class="code-wrap">
-        <pre>[nginx-local]
-name=Local Nginx Repo
-baseurl=http://3.83.26.112/rhel/master-sync/nginx-stable
-enabled=1
-gpgcheck=0</pre>
+        <pre>sudo mkdir -p /mnt/data/share</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
-      <p>Verifikasi repo terdaftar di client:</p>
+
+      <h3>3. Mount NFS share</h3>
       <div class="code-wrap">
-        <pre>dnf repolist</pre>
+        <pre>sudo mount -t nfs 20.20.20.20:/mnt/shares /mnt/data/share</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
       </div>
-      <p>Install nginx dari local repo:</p>
+
+      <h3>4. Verify</h3>
       <div class="code-wrap">
-        <pre>dnf install nginx</pre>
+        <pre>df -h</pre>
         <button class="copy-btn" onclick="copyCode(this)">COPY</button>
-      </div>
-      <div class="info-box">
-        Jika instalasi berhasil, berarti client sudah berhasil mengambil package dari local repo tanpa
-        akses ke internet. Pastikan port 80 di server repo sudah terbuka di security group / firewall.
       </div>
     </article>
   </div>
@@ -1920,7 +1954,8 @@ openstack volume delete &lt;volume ID&gt;</pre>
     'blog-victoriametrics':    { el: 'page-blog-victoriametrics',    title: 'Integrasi VictoriaMetrics sebagai Storage Pengganti TSDB' },
     'blog-migrate-prometheus': { el: 'page-blog-migrate-prometheus', title: 'Migrasi Data-Source Prometheus dari compute-1 ke compute-2' },
     'blog-loki':               { el: 'page-blog-loki',               title: 'Setup Loki & Promtail' },
-    'blog-localrepo-rhel':     { el: 'page-blog-localrepo-rhel',     title: 'Setup Local Repo di Linux berbasis RHEL menggunakan NGINX' },
+    'blog-localrepo-rhel':     { el: 'page-blog-localrepo-rhel',     title: 'Setup Local Repo OS RHEL menggunakan httpd' },
+    'blog-nfs':                { el: 'page-blog-nfs',                title: 'Setup NFS Server & Client (Rocky 9)' },
     'blog-openstack-cmd':      { el: 'page-blog-openstack-cmd',      title: 'OpenStack Command Cheat Sheet' },
   };
 
